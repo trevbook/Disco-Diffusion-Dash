@@ -1,1 +1,8 @@
 .idea
+~*.xlsx
+/data
+.cache
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+color_planet_experiment

@@ -5,11 +5,12 @@
     "animation_mode": "None",
     "extract_nth_frame": 2,
     "frames_scale": 1500,
-    "frames_skip_steps": 0.6,
+    "frames_skip_steps": "60%",
     "key_frames": true,
     "max_frames": 10000,
     "translation_x": "0: (0)",
     "video_init_path": "",
+    "init_image": "",
     "zoom": "0: (1), 10: (1.05)",
     "skip_augs": false,
     "clip_guidance_scale": 5000,
@@ -20,7 +21,7 @@
     "tv_scale": false,
     "start_frame": false,
     "batch_name": "TimeToDisco",
-    "display_rate": 50,
+    "display_rate": 1,
     "n_batches": true,
     "batch_size": true,
     "clip_denoised": false,
@@ -35,7 +36,7 @@
     "eta": 0.8,
     "cutn": 16,
     "cut_ic_pow": true,
-    "intermediate_saves": false,
+    "intermediate_saves": 0,
     "cut_icgray_p": "[0.2]*400+[0]*600",
     "cut_innercut": "[4]*400+[12]*600",
     "cut_overview": "[12]*400+[4]*600",
@@ -57,6 +58,6 @@
     "timestep_respacing": null,
     "width_height": [1150, 700],
     "text_prompts": {"0": []},
-    "image_prompts": {"0": []}
+    "image_prompts": {}
 
 }
