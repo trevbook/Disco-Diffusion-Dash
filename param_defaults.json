@@ -17,7 +17,7 @@
     "cutn_batches": 4,
     "range_scale": 150,
     "sat_scale": false,
-    "steps": 250,
+    "steps": 300,
     "tv_scale": false,
     "start_frame": false,
     "batch_name": "TimeToDisco",
@@ -56,7 +56,8 @@
     "ViTB32": true,
     "ViTL14": false,
     "timestep_respacing": null,
-    "width_height": [1150, 700],
+    "width": 1024,
+    "height": 640,
     "text_prompts": {"0": []},
     "image_prompts": {}
 

@@ -6,3 +6,15 @@
 __pycache__/
 *.pyc
 color_planet_experiment
+taming-transformers/
+latent_diffusion/
+image_prompts/
+guided-diffusion/
+content/
+config_files/
+CLIP/
+Parameter Explanations Old.xlsx/
+progress.png
+queueing notes.txt
+
+

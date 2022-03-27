@@ -11,8 +11,8 @@ from PIL import Image
 import numpy as np
 import base64
 import io
-
-
+from pathlib import Path
+from copy import deepcopy
 
 # Dash-related imports
 import dash
@@ -24,6 +24,34 @@ from dash import html
 import dash_bootstrap_components as dbc
 from dash.exceptions import PreventUpdate
 
+# ============================
+# 	    LOADING DATA
+# ============================
+# Below, we're going to load data into memory that's used in various methods
+
+# Load the default parameters
+default_params = {}
+with open("param_defaults.json", "r") as param_json:
+    default_params = json.load(param_json)
+
+# Check to see if the "image_prompts" folder is in the file structure (and create it if it's not)
+image_prompt_path = Path("image_prompts/")
+if (not image_prompt_path.exists()):
+    Path.mkdir(image_prompt_path)
+
+# Check to see if the "config_files" folder is in the file structure (and create it if it's not)
+config_file_path = Path("config_files/")
+if (not config_file_path.exists()):
+    Path.mkdir(config_file_path)
+
+# Loading the Parameter Explanations Excel file
+param_explanations_df = pd.read_excel("Parameter Explanations.xlsx")
+
+# ============================
+# 	    GENERAL METHODS
+# ============================
+# All of the code below are more general methods I can use throughout
+# the rest of this app's code-base
 
 # This method will find a given ID in the row of components, and then return which index that
 # component is in the list of children
@@ -48,6 +76,8 @@ def generate_text_prompt_component(prompt_num):
         children=[
             html.Div(
                 children=[
+
+                    # This is the "header" of the Text Prompt; it contains the title of the box, as well as a close button
                     dbc.Row(
                         children=[
                             dbc.Col(
@@ -70,11 +100,14 @@ def generate_text_prompt_component(prompt_num):
                         ],
                         style={"marginBottom": "10px"}
                     ),
+
+                    # This is the Text Area for the Text Prompt
                     dbc.Row(
                         children=[
                             dbc.Col(
                                 children=[
                                     dcc.Textarea(
+                                        id={"type": "text_prompt_input", "index": prompt_num},
                                         style={"width": "100%", "resize": "none", "height": "125px"}
                                     )
                                 ],
@@ -83,6 +116,8 @@ def generate_text_prompt_component(prompt_num):
                         ],
                         style={"marginBottom": "10px"}
                     ),
+
+                    # This is the Prompt Strength row
                     dbc.Row(
                         children=[
                             dbc.Col(
@@ -92,6 +127,7 @@ def generate_text_prompt_component(prompt_num):
                                             html.B("Prompt Strength:", style={"display": "inline-block", "marginRight": "10px"}),
                                             dcc.Input(type="number",
                                                       value=1,
+                                                      id={"type": "prompt_strength", "index": prompt_num},
                                                       style={"display": "inline-block", "width": "100px"})
                                         ],
                                     )
@@ -101,6 +137,8 @@ def generate_text_prompt_component(prompt_num):
                         ],
                         style={"marginBottom": "15px"}
                     ),
+
+                    # This is the Prompt Influence row
                     dbc.Row(
                         children=[
                             dbc.Col(
@@ -109,7 +147,7 @@ def generate_text_prompt_component(prompt_num):
                                         children=[
                                             html.B("Prompt Influence:",
                                                    style={"display": "inline-block", "marginRight": "10px"}),
-                                            dbc.Progress(style={"display": "inline-block", "width": "100px"})
+                                            dbc.Progress(id={"type": "prompt_influence", "index": prompt_num})
                                         ],
                                     )
                                 ],
@@ -119,7 +157,7 @@ def generate_text_prompt_component(prompt_num):
                         style={"marginBottom": "20px"}
                     )
                 ],
-                style={"border": "1px solid blue", "height": "280px", "padding": "10px"},
+                style={"border": "1px solid blue", "height": "300px", "padding": "10px"},
             )
         ],
         width=4
@@ -127,7 +165,6 @@ def generate_text_prompt_component(prompt_num):
 
     # Return the component
     return component
-
 
 
 # This method will generate an image prompt component
@@ -138,6 +175,8 @@ def generate_image_prompt_component(prompt_num):
         children=[
             html.Div(
                 children=[
+
+                    # This is the "header row", which contains a Prompt title and a close button
                     dbc.Row(
                         children=[
                             dbc.Col(
@@ -160,6 +199,8 @@ def generate_image_prompt_component(prompt_num):
                         ],
                         style={"marginBottom": "10px"}
                     ),
+
+                    # This is the "Image Upload" box
                     dbc.Row(
                         children=[
                             dbc.Col(
@@ -177,6 +218,8 @@ def generate_image_prompt_component(prompt_num):
                         ],
                         style={"marginBottom": "10px"}
                     ),
+
+                    # This is the Prompt Strength input
                     dbc.Row(
                         children=[
                             dbc.Col(
@@ -186,6 +229,7 @@ def generate_image_prompt_component(prompt_num):
                                             html.B("Prompt Strength:",
                                                    style={"display": "inline-block", "marginRight": "10px"}),
                                             dcc.Input(type="number",
+                                                      id={"type": "prompt_strength", "index": prompt_num},
                                                       value=1,
                                                       style={"display": "inline-block", "width": "100px"})
                                         ],
@@ -197,6 +241,8 @@ def generate_image_prompt_component(prompt_num):
                         style={"marginBottom": "15px",
                                "paddingTop": "6px"}
                     ),
+
+                    # This is the Prompt Influence progress bar
                     dbc.Row(
                         children=[
                             dbc.Col(
@@ -205,7 +251,7 @@ def generate_image_prompt_component(prompt_num):
                                         children=[
                                             html.B("Prompt Influence:",
                                                    style={"display": "inline-block", "marginRight": "10px"}),
-                                            dbc.Progress(style={"display": "inline-block", "width": "100px"})
+                                            dbc.Progress(id={"type": "prompt_influence", "index": prompt_num})
                                         ],
                                     )
                                 ],
@@ -215,7 +261,7 @@ def generate_image_prompt_component(prompt_num):
                         style={"marginBottom": "10px"}
                     )
                 ],
-                style={"border": "1px solid red", "height": "280px", "padding": "10px"},
+                style={"border": "1px solid red", "height": "300px", "padding": "10px"},
             )
         ],
         width=4
@@ -260,7 +306,7 @@ def generate_add_prompt_buttons():
                             ],
                             style={"textAlign": "center",
                                    "border": "1px dotted black",
-                                   "height": "280px"}
+                                   "height": "300px"}
                         )
                     ],
                     width=4
@@ -274,8 +320,8 @@ def add_computed_parameters(chosen_params):
 
     # Extract a couple of important values from chosen_params
     steps = chosen_params["steps"]
-    width = chosen_params["width_height"][0]
-    height = chosen_params["width_height"][1]
+    width = chosen_params["width"]
+    height = chosen_params["height"]
     set_seed = chosen_params["set_seed"]
     frames_skip_steps = chosen_params["frames_skip_steps"]
     max_frames = chosen_params["max_frames"]
@@ -388,3 +434,127 @@ def shift_prompts_back_one(current_rows, affected_row, affected_idx):
     return_rows = unaffected_rows + new_rows
 
     return return_rows
+
+
+# This method will generate a configuration file based on the settings that the user has selected
+def generate_config(prompts, scores, settings):
+
+    # First, we can step through each of the prompts in the prompts dict to sort them
+    user_text_prompts = {}
+    user_image_prompts = {}
+    for promptKey, promptDict in prompts.items():
+        prompt_type = promptDict["type"]
+        prompt_score = scores[promptKey]
+        if (prompt_type) == "text":
+            user_text_prompts[promptKey] = {"value": promptDict["value"].strip(), "score": prompt_score}
+        elif (prompt_type) == "image":
+            user_image_prompts[promptKey] = {"value": promptDict["value"].strip(), "score": prompt_score}
+
+    # First, we'll need to generate the text_prompt dictionary
+    text_prompt_list = []
+    for prompt_key, text_prompt in user_text_prompts.items():
+        text_prompt_str = f"{text_prompt['value']}:{text_prompt['score']}"
+        text_prompt_list.append(text_prompt_str)
+    text_prompt_dict = {}
+    if (len(text_prompt_list) > 0):
+        text_prompt_dict = {"0": text_prompt_list}
+
+    # Now, we'll need to generate the image_prompt dictionary
+    image_prompt_list = []
+    for prompt_key, image_prompt in user_image_prompts.items():
+        image_prompt_str = f"{image_prompt_path.resolve()/Path(image_prompt['value'])}:{image_prompt['score']}"
+        image_prompt_list.append(image_prompt_str)
+    image_prompt_dict = {}
+    if (len(image_prompt_list) > 0):
+        image_prompt_dict["0"] = image_prompt_list
+
+    # Now, we'll generate the settings based on what the user had specified
+    final_settings = deepcopy(default_params)
+    final_settings["text_prompts"] = text_prompt_dict
+
+
+    # This is me, testing the responsiveness of Chrome Remote Desktop on my Mac! /
+
+    final_settings["image_prompts"] = image_prompt_dict
+    for setting_name, setting_value in settings.items():
+        if (isinstance(setting_value, str)):
+            setting_value = setting_value.strip()
+        final_settings[setting_name] = setting_value
+
+    # Add the "calculated options" based on the options in these final settings
+    final_settings = add_computed_parameters(final_settings)
+
+    # Now, save this configuration JSON in the config_files folder
+    file_name = f"{str(config_file_path)}/{final_settings['batch_name']}.json"
+    with open(file_name, "w") as config_json_file:
+        json.dump(final_settings, config_json_file, indent=4)
+
+
+# This method will parse the contents of an uploaded config file
+def parse_uploaded_config(uploaded_config_data):
+
+    content_type, content_string = uploaded_config_data.split(',')
+
+    decoded = base64.b64decode(content_string)
+
+    decoded_data = json.loads(decoded)
+
+    return decoded_data
+
+
+# This method will create a label, input, and Tooltip
+def labeled_input_with_tooltip(parameter_name, parameter_label,
+                               default_value, input_type,
+                               tooltip_text, **input_kwargs):
+
+    # Indicating whether the input_component is a Boolean or a Numerical / String input
+    if (input_type == "boolean"):
+        input_component = dbc.Checklist(id=f"{parameter_name}_input", value=[default_value],
+                                        **input_kwargs)
+    else:
+        input_component = dbc.Input(id=f"{parameter_name}_input", value=default_value,
+                                    type=input_type, **input_kwargs)
+
+    return html.Div(
+        id=f"{parameter_name}_input_group",
+        children=[
+            dbc.Label(
+                children=[html.B(parameter_label)],
+                id=f"{parameter_name}_label"
+            ),
+            input_component,
+            dbc.Tooltip(
+                target=f"{parameter_name}_label",
+                children=[
+                    tooltip_text
+                ]
+            )
+
+        ]
+    )
+
+
+# This will create a parameter input using all of the different information from the Parameter Explanations.xlsx file
+def parameter_input(param_name, **input_kwargs):
+
+    # Query the parameter DataFrame to find this parameter
+    param_df_row = param_explanations_df.query("parameter_name==@param_name").iloc[0]
+    label = param_df_row["label"]
+    param_type = param_df_row["type"]
+    default = param_df_row["default_value"]
+    description = param_df_row["description"]
+    return labeled_input_with_tooltip(param_name, label, default, param_type, description, **input_kwargs)
+
+
+# This method will load a dictionary of inputs from the Parameter Explanations.xslx file
+def load_parameter_defaults():
+
+    # Iterate through each of the rows and grab the default value
+    defaults = {}
+    for row in param_explanations_df.itertuples():
+        defaults[row.parameter_name] = row.default_value
+
+    # Return this dictionary
+    return defaults
+
+

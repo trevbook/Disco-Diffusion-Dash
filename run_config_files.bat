@@ -1,0 +1,1 @@
+python disco_diffusion.py --dir "config_files"

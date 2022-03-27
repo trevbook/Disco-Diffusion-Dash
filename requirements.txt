@@ -1,0 +1,7 @@
+plotly
+Pillow
+dash
+dash_bootstrap_components
+dash_daq
+openpyxl
+xlrd
