@@ -168,7 +168,7 @@ app.layout = html.Div(
                                         dcc.Markdown(
                                             children=[
                                                 """
-                                                ### Configuration Settings
+                                                ### Generate Configuration File
                                                 Below, there are a number of different settings that you ought to specify; these 
                                                 settings will be compiled together into a "configuration file", which can be 
                                                 used to run Disco Diffusion. 
@@ -504,7 +504,7 @@ app.layout = html.Div(
                                                         dcc.Upload(
                                                             id="init_image_upload",
                                                             children=["Upload Image"],
-                                                            style={"width": "100%", "height": "300px", "borderStyle": "dashed",
+                                                            style={"width": "734px", "height": "300px", "borderStyle": "dashed",
                                                                    "borderWidth": "1px", "textAlign": "center", "lineHeight": "300px",
                                                                    "cursor": "pointer"}
                                                         )
@@ -514,63 +514,100 @@ app.layout = html.Div(
                                             ],
                                             justify="center",
                                             style={"marginBottom": "10px"},
-                                        )
+                                        ),
+                                        dbc.Row(
+                                            children=[
+                                                dbc.Col(
+                                                    width=3,
+                                                    children=[
+                                                        html.Div(
+                                                            children=[
+                                                                dbc.Button(
+                                                                    id="clear_init_image_button",
+                                                                    children=[
+                                                                        "Clear Init Image"
+                                                                    ],
+                                                                    style={"visibility": "hidden"}
+                                                                )
+                                                            ],
+                                                            className="d-grid gap-2"
+                                                        )
+                                                    ]
+                                                ),
+                                            ],
+                                            justify="center",
+                                            style={"marginBottom": "20px", "width": "100%"},
+                                        ),
+                                        dbc.Row(
+                                            dbc.Col(
+                                                width=12,
+                                                id="advanced_init_settings_col",
+                                                children=[
+                                                    dbc.Row(
+                                                        children=[
+                                                            dbc.Col(
+                                                                width=5,
+                                                                children=[
+                                                                    parameter_input("init_scale"),
+                                                                ]
+                                                            ),
+                                                            dbc.Col(
+                                                                width=5,
+                                                                children=[
+                                                                    parameter_input("skip_steps"),
+                                                                ]
+                                                            )
+                                                        ],
+                                                        justify="between"
+                                                    )
+                                                ]
+                                            )
+                                        ),
+
                                     ],
                                 ),
                             ],
                             style={"width": "100%"}
                         )
                     ],
-                    style={"marginBottom": "20px"}
+                    style={"marginBottom": "30px"}
                 ),
 
-                # This is the "Diffusion Settings" row - it's where users will define some settings for running diffusion
+                # This is the "Generate Configuration File" button row.
                 dbc.Row(
                     children=[
-                        dbc.Col(
+                        dbc.Row(
+                            dcc.Markdown(
+                                """
+                                Once you're finished filling in all of the relevant settings, you can click this button to generate a configuration file! 
+                                """
+                            )
+                        ),
+                        dbc.Row(
                             children=[
-                                dbc.Row(
+                                dbc.Col(
                                     children=[
-                                        dcc.Markdown(
-                                            children=[
-                                                """
-                                                ### Generate Configuration File
-                                                Once you've filled out all of the settings above, you can generate some
-                                                configuration files using this area. 
-                                                """
-                                            ]
-                                        )
-                                    ]
-                                ),
-                                dbc.Row(
-                                    children=[
-                                        dbc.Col(
-                                            children=[
-                                                dbc.Button(
-                                                    id="generate_config_button",
-                                                    color="primary",
-                                                    children=["Generate Config File"]
-                                                )
-                                            ],
-                                            width=6,
-                                        ),
-                                        dbc.Col(
-                                            children=[
-                                                html.Div(
-                                                    id="generate_config_info",
-                                                    children=[""]
-                                                )
-                                            ],
-                                            width=6
+                                        dbc.Button(
+                                            id="generate_config_button",
+                                            color="primary",
+                                            children=["Generate Config File"]
                                         )
                                     ],
+                                    width=6,
                                 ),
-
                             ],
-                            width=12
+                            style={"marginBottom": "10px"}
+                        ),
+                        dbc.Row(
+                            children=[
+                                html.Div(
+                                    id="generate_config_info",
+                                    children=[""]
+                                )
+                            ]
                         )
                     ],
-                    style={"marginBottom": "40px", "marginTop": "40px"}
+                    style={"marginBottom": "30px"}
                 ),
 
                 dbc.Row(
@@ -584,7 +621,7 @@ app.layout = html.Div(
                                                 """
                                                 ### Run Diffusion
                                                 Below, you'll be able to add configuration files to a queue; when these 
-                                                files are added to the queue, they'll be automatically run.  
+                                                files are added to the queue, they'll be automatically run... **eventually. (This option DOES NOT WORK yet.)**
                                                 """
                                             ]
                                         )
@@ -652,7 +689,8 @@ app.layout = html.Div(
                       # Output("animation_settings_row", "style"),
                       Output("extra_settings_row", "style"),
                       Output("basic_settings_col", "width"),
-                      Output("advanced_basic_settings_col", "style")],
+                      Output("advanced_basic_settings_col", "style"),
+                      Output("advanced_init_settings_col", "style")],
               inputs=[Input("dev_mode_switch", "on")])
 def toggle_dev_mode_options(dev_mode_on):
 
@@ -666,9 +704,13 @@ def toggle_dev_mode_options(dev_mode_on):
     all_styles_list = [row_style] * 2 # Change this to 3 once I reincorporate animation
 
     # Deal with the Basic Settings row
-    basic_settings_col_width = 5 if dev_mode_on else 12
+    basic_settings_col_width = 5 if dev_mode_on else 5
     advanced_basic_settings_style = {"display": "block" if dev_mode_on else "none"}
     all_styles_list += [basic_settings_col_width, advanced_basic_settings_style]
+
+    # Deal with the Init Settings row
+    init_settings = {"display": "block" if dev_mode_on else "none"}
+    all_styles_list += [init_settings]
 
     # Finally, return the "all_sytles_list"
     return all_styles_list
@@ -771,23 +813,47 @@ def manage_prompt_area(text_prompt_button_nclicks, image_prompt_button_nclicks,
 
 @app.callback(output=[Output("init_image_upload", "children"),
                       Output("init_image_upload", "style"),
-                      Output("init_image_store", "data")],
-              inputs=[Input("init_image_upload", "filename")],
+                      Output("init_image_store", "data"),
+                      Output("clear_init_image_button", "style"),
+                      Output("skip_steps_input", "value")],
+              inputs=[Input("init_image_upload", "filename"),
+                      Input("clear_init_image_button", "n_clicks")],
               state=[State("init_image_upload", "children"),
-                     State("init_image_upload", "contents")])
-def update_init_image_upload_area(uploaded_filename, current_children, current_contents):
+                     State("init_image_upload", "contents"),
+                     State("clear_init_image_button", "style"),
+                     State("skip_steps_input", "value")])
+def update_init_image_upload_area(uploaded_filename, clear_button_n_clicks, current_children, current_contents, cur_button_style,
+                                  current_skip_steps_value):
 
     # This is the style of the Upload; we'll be returning some form of this as one of the Outputs of this callback
-    upload_style = {"width": "100%", "height": "300px", "borderStyle": "dashed",
+    upload_style = {"width": "734px", "height": "300px", "borderStyle": "dashed",
                     "borderWidth": "1px", "textAlign": "center", "lineHeight": "300px",
                     "marginTop": "3px", "cursor": "pointer"}
 
+    ctx = dash.callback_context
+    if not ctx.triggered:
+        raise PreventUpdate
+    else:
+        trigger_id = ctx.triggered[0]['prop_id'].split('.')[0]
+
     # If the user hasn't uploaded a file, then don't change anything
     if (uploaded_filename is None):
-        return current_children, upload_style, ""
+        return current_children, upload_style, "", cur_button_style, current_skip_steps_value
+
+    # If the user clicked the 'clear image button', we'll have to clear the area and hide the button
+    elif (trigger_id == "clear_init_image_button"):
+
+        # We'll need to change the style of the button to be hidden
+        cur_button_style["visibility"] = "hidden"
+
+        # Return everything
+        return ["Upload Image"], upload_style, "", cur_button_style, 0
 
     # Otherwise, read in the image that the user uploaded, and then resize it so that it's displayed in the output
     else:
+
+        # Make a new style for the "Clear Init Image" button
+        cur_button_style["visibility"] = "visible"
 
         # We'll want to delete the lineHeight argument from the style so that the image appears in the middle of the Upload
         del upload_style["lineHeight"]
@@ -800,15 +866,15 @@ def update_init_image_upload_area(uploaded_filename, current_children, current_c
         img.save(output_file_path)
 
         # Resize the image, and then add it to a dcc.Graph component
-        img = contain(img, (700, 290))
+        img = contain(img, (730, 298))
         fig = px.imshow(img, color_continuous_scale='gray')
         fig.update_layout(coloraxis_showscale=False)
         fig.update_xaxes(showticklabels=False)
         fig.update_yaxes(showticklabels=False)
         fig.update_layout(margin={"l": 0, "r": 0, "t": 1, "b": 0})
-        fig.update_layout(width=700)
-        fig.update_layout(height=290)
-        return dcc.Graph(figure=fig, config={"staticPlot": True}), upload_style, str(output_file_path)
+        fig.update_layout(width=730)
+        fig.update_layout(height=298)
+        return dcc.Graph(figure=fig, config={"staticPlot": True}), upload_style, str(output_file_path), cur_button_style, 140
 
 
 # This callback will update the contents of the image prompt upload box
@@ -947,7 +1013,7 @@ def update_prompt_store(image_prompt_filenames, text_prompt_inputs, current_prom
 
 
 # This callback will launch the 'generate configuration' process, which will create a config file
-@app.callback(output=Output("misc_store_config_generation", "data"),
+@app.callback(output=Output("generate_config_info", "children"),
               inputs=[Input("generate_config_button", "n_clicks")],
               state=[State("prompt_store", "data"),
                      State("prompt_score_store", "data"),
@@ -969,6 +1035,14 @@ def generate_config(generate_config_nclicks,
 
     # Run the "generate config" method in utils
     utils.generate_config(prompt_store_data, prompt_score_store_data, settings_store_data)
+
+    # Return a message for the generate_config_info Div
+    saved_filename = "/config_files/"
+    if ("batch_name" in settings_store_data):
+        saved_filename = f"{saved_filename}{settings_store_data['batch_name']}"
+    return dcc.Markdown(
+        f"""Generated a new configuration file at **{saved_filename}.**"""
+    )
 
     raise PreventUpdate
 
