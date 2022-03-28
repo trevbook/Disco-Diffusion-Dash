@@ -610,6 +610,47 @@ app.layout = html.Div(
                     style={"marginBottom": "30px"}
                 ),
 
+                # This is the Load Configuration File row!
+                dbc.Row(
+                    children=[
+                        dbc.Row(
+                            children=[
+                                dbc.Col(
+                                    width=12,
+                                    children=[
+                                        dcc.Markdown(
+                                            f"""
+                                            ### Load Configuration File
+                                            If you want to slightly tweak the settings from an old file, then use this area to upload the config for a particular batch! 
+                                            """
+                                        )
+                                    ],
+                                )
+                            ],
+                            style={"marginBottom": "10px"}
+                        ),
+
+                        # This is the "Load Configurations" input row. Within it, there'll be an 'Upload Config File' dcc.Upload, as well as a button to clear
+                        # the recently uploaded file.
+                        dbc.Row(
+                            children=[
+                                dbc.Row(
+                                    children=[
+                                        dbc.Col(
+                                            width=12,
+                                            children=[
+
+                                            ]
+                                        )
+                                    ]
+                                )
+                            ]
+                        )
+                    ],
+                    style={"marginBottom": "30px"}
+                ),
+
+                # This is the 'Run Diffusion' row!
                 dbc.Row(
                     children=[
                         dbc.Col(
