@@ -21,7 +21,7 @@ git clone https://github.com/CompVis/taming-transformers
 pip install -e ./taming-transformers
 
 mkdir content
-mkdir content/models
+mkdir content\models
 
 curl.exe --output content/models/256x256_diffusion_uncond.pt --url https://openaipublic.blob.core.windows.net/diffusion/jul-2021/256x256_diffusion_uncond.pt
 curl.exe --output content/models/512x512_diffusion_uncond_finetune_008100.pt --url https://v-diffusion.s3.us-west-2.amazonaws.com/512x512_diffusion_uncond_finetune_008100.pt

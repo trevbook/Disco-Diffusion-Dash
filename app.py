@@ -1070,9 +1070,7 @@ def generate_config(generate_config_nclicks,
     # If there's an init image, then we'll want to edit the settings_store_data
     if (init_image_store_data != "" and init_image_store_data is not None):
         settings_store_data["init_image"] = init_image_store_data
-        skip_amt = 140
-        settings_store_data["skip_steps"] = skip_amt
-        settings_store_data["steps"] += skip_amt
+        settings_store_data["steps"] += settings_store_data["skip_steps"]
 
     # Run the "generate config" method in utils
     utils.generate_config(prompt_store_data, prompt_score_store_data, settings_store_data)

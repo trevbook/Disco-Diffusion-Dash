@@ -16,6 +16,7 @@ import json
 import random
 import pandas as pd
 import numpy as np
+import os
 from time import sleep
 from copy import deepcopy
 
@@ -93,6 +94,7 @@ unprocessed_arg_dicts = deepcopy(arg_dicts)
 
 # Now, we'll process the prompt lists from each of the arg_dicts
 for idx, arg_dict in enumerate(arg_dicts):
+
     # Extract max_frames from the arg_dict
     max_frames = arg_dict["max_frames"]
 
@@ -1637,6 +1639,8 @@ else:
 # Below, we'll run diffusion across each of the different argument dicts we've parsed 
 
 for cur_arg_idx, cur_arg_dict in enumerate(arg_dicts):
+
+    # Remove the
 
     # Creating a folder for this current batch 
     batchFolder = f'{outDirPath}/{cur_arg_dict["batch_name"]}'
