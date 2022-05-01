@@ -42,6 +42,9 @@ args = parser.parse_args()
 # Declare the arg_dicts list; this is where we'll extract the argument dictionaries
 arg_dicts = []
 
+# We'll also keep a list of all of the different Paths we've pulled the arg_dicts from
+config_paths = []
+
 # Checking to see if the user provided the correct arguments
 if (args.file is None and args.dir is None):
     print("You needed to supply either a path to a config file or a directory of config files.\n"
@@ -65,6 +68,7 @@ elif (args.file is not None and args.dir is None):
 
     # If the file_path DOES exist, we'll read in the JSON
     else:
+        config_paths.append(file_path)
         with open(file_path, "r") as json_file:
             arg_dicts.append(json.load(json_file))
 
@@ -79,6 +83,7 @@ elif (args.file is None and args.dir is not None):
     # If the directory DOES exist, then we'll iterate through each of the files and read them in if they're .json
     for child_file in dir_path.iterdir():
         if (child_file.suffix == ".json"):
+            config_paths.append(child_file)
             with open(child_file, "r") as jsonFile:
                 arg_dicts.append(json.load(jsonFile))
 
@@ -92,7 +97,7 @@ def convert_prompt_dict_keys(prompt_dict):
 unprocessed_arg_dicts = deepcopy(arg_dicts)
 
 
-# Now, we'll process the prompt lists from each of the arg_dicts awdadawd
+# Now, we'll process the prompt lists from each of the arg_dicts
 for idx, arg_dict in enumerate(arg_dicts):
 
     # Extract max_frames from the arg_dict
@@ -1636,19 +1641,19 @@ else:
 # ====================================
 #            RUN DIFFUSION
 # ====================================
-# Below, we'll run diffusion across each of the different argument dicts we've parsed 
-
+# Below, we'll run diffusion across each of the different argument dicts we've parsed
 for cur_arg_idx, cur_arg_dict in enumerate(arg_dicts):
-
-    # Remove the
 
     # Creating a folder for this current batch 
     batchFolder = f'{outDirPath}/{cur_arg_dict["batch_name"]}'
     createPath(batchFolder)
 
     # Save the config file in the resulting folder
-    with open(f"{batchFolder}/config.json", "w") as config_json:
+    with open(f"{batchFolder}/{cur_arg_dict['batch_name']}_config.json", "w") as config_json:
         json.dump(unprocessed_arg_dicts[cur_arg_idx], config_json, indent=2)
+
+    # Delete the original config file
+    os.remove(str(config_paths[cur_arg_idx]))
 
     args = SimpleNamespace(**cur_arg_dict)
 
@@ -1719,3 +1724,4 @@ for cur_arg_idx, cur_arg_dict in enumerate(arg_dicts):
         pass
     gc.collect()
     torch.cuda.empty_cache()
+    sleep(10)
