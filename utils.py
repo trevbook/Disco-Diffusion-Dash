@@ -471,10 +471,6 @@ def generate_config(prompts, scores, settings):
     # Now, we'll generate the settings based on what the user had specified
     final_settings = deepcopy(default_params)
     final_settings["text_prompts"] = text_prompt_dict
-
-
-    # This is me, testing the responsiveness of Chrome Remote Desktop on my Mac! /
-
     final_settings["image_prompts"] = image_prompt_dict
     for setting_name, setting_value in settings.items():
         if (isinstance(setting_value, str)):
@@ -509,8 +505,10 @@ def labeled_input_with_tooltip(parameter_name, parameter_label,
 
     # Indicating whether the input_component is a Boolean or a Numerical / String input
     if (input_type == "boolean"):
-        input_component = dbc.Checklist(id=f"{parameter_name}_input", value=[default_value],
-                                        **input_kwargs)
+        if (default_value):
+            input_component = dbc.Checklist(id=f"{parameter_name}_input", value=[0], **input_kwargs)
+        else:
+            input_component = dbc.Checklist(id=f"{parameter_name}_input", value=[], **input_kwargs)
     else:
         input_component = dbc.Input(id=f"{parameter_name}_input", value=default_value,
                                     type=input_type, **input_kwargs)
@@ -529,8 +527,8 @@ def labeled_input_with_tooltip(parameter_name, parameter_label,
                     tooltip_text
                 ]
             )
-
-        ]
+        ],
+        style={}
     )
 
 

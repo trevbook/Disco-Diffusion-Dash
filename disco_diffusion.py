@@ -12,6 +12,7 @@ import argparse
 from pathlib import Path
 import json
 import math
+import shutil
 import json
 import random
 import pandas as pd
@@ -60,7 +61,6 @@ elif (args.file is not None and args.dir is not None):
 # Check to see if the user provided a valid file path
 elif (args.file is not None and args.dir is None):
     file_path = Path(args.file[0])
-    print(file_path)
     if (not file_path.exists()):
         print("You need to provide a valid file path. Please do that, and then try again.\n"
               "Exiting Disco Diffusion...")
@@ -546,8 +546,6 @@ stop_on_next_loop = False  # Make sure GPU memory doesn't get corrupted from can
 
 def do_run(args):
 
-    print(f"Doing the run with the following arguments:\n{args}")
-
     seed = args.seed
     for frame_num in range(args.start_frame, args.max_frames):
         if stop_on_next_loop:
@@ -760,7 +758,6 @@ def do_run(args):
                 if torch.isnan(x_in_grad).any() == False:
                     grad = -torch.autograd.grad(x_in, x, x_in_grad)[0]
                 else:
-                    # print("NaN'd")
                     x_is_NaN = True
                     grad = torch.zeros_like(x)
             if args.clamp_grad and x_is_NaN == False:
@@ -779,8 +776,6 @@ def do_run(args):
                 batchBar = tqdm(range(args.n_batches), desc="Batches")
                 batchBar.n = i
                 batchBar.refresh()
-            # print('')
-            # display.display(image_display)
             gc.collect()
             torch.cuda.empty_cache()
             cur_t = diffusion.num_timesteps - skip_steps - 1
@@ -844,7 +839,7 @@ def do_run(args):
                                         filename = f'{args.batch_name}({i})_{i:04}-{percent:02}%.png'
                                     # Or else, iIf we're working with specific steps, append those
                                     else:
-                                        filename = f'{args.batch_name}({i})_{i:04}-{j:03}.png'
+                                        filename = f'{args.batch_name}({i})_{i:04}-{j}.png'
                             image = TF.to_pil_image(image.add(1).div(2).clamp(0, 1))
                             if j % args.display_rate == 0 or cur_t == -1:
                                 image.save('progress.png')
@@ -1284,8 +1279,6 @@ skip_steps = 0
 # Get corrected sizes
 side_x = (width_height[0] // 64) * 64;
 side_y = (width_height[1] // 64) * 64;
-if side_x != width_height[0] or side_y != width_height[1]:
-    print(f'Changing output size to {side_x}x{side_y}. Dimensions must by multiples of 64.')
 
 # Update Model Settings
 timestep_respacing = f'ddim{steps}'
@@ -1724,4 +1717,22 @@ for cur_arg_idx, cur_arg_dict in enumerate(arg_dicts):
         pass
     gc.collect()
     torch.cuda.empty_cache()
-    sleep(10)
+
+    # Now, we'll check to see if we need to create an MP4 of the partials
+    if (cur_arg_dict["create_mp4"]):
+        for cur_batch_num in range(cur_arg_dict["n_batches"]):
+            video_fps = cur_arg_dict["mp4_fps"]
+            cur_batch_name = cur_arg_dict["batch_name"]
+            video_width = cur_arg_dict["width"]
+            video_height = cur_arg_dict["height"]
+            batch_folder_full_path = Path(os.getcwd()) / Path(batchFolder)
+            output_file_name = str(batch_folder_full_path / Path(f"final_video_{cur_batch_num}.mp4")).replace("//", "/")
+            partial_prefix = f'{str(batch_folder_full_path / Path("partials/"))}\\{cur_batch_name}({cur_batch_num})_{cur_batch_num:04}-'.replace("//", "/")
+
+            ffmpeg_command = f"ffmpeg -r {video_fps} -f image2 -s {video_width}x{video_height} -i \"{partial_prefix}%d.png\" -vcodec libx264 -crf 25  -pix_fmt yuv420p \"{output_file_name}\""
+            print(f"\nRunning the following command to create the MP4:\n{ffmpeg_command}")
+            os.system(ffmpeg_command)
+
+    # We'll also check if we need to delete the pictures within the partials folder
+    if (not cur_arg_dict["save_all_images"]):
+        shutil.rmtree(partialFolder)

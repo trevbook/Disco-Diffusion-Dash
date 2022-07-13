@@ -83,6 +83,7 @@ param_explanations_df = pd.read_excel("Parameter Explanations.xlsx")
 param_settings_inputs = [Input(f"{x.parameter_name}_input", "value") for x in param_explanations_df.itertuples()]
 param_settings_outputs = [Output(f"{x.parameter_name}_input", "value") for x in param_explanations_df.itertuples()]
 param_names = list(param_explanations_df["parameter_name"].unique())
+param_types = {x.parameter_name: x.type for x in param_explanations_df.itertuples()}
 
 # ============================
 # 	    GENERAL METHODS
@@ -141,7 +142,7 @@ app.layout = html.Div(
                             children=[
                                 daq.BooleanSwitch(
                                     id="dev_mode_switch",
-                                    on=False,
+                                    on=True,
                                     label="Developer Mode",
                                     labelPosition="top"
                                 ),
@@ -239,6 +240,34 @@ app.layout = html.Div(
                                                         ],
                                                         style={"marginBottom": "10px"}
                                                     ),
+                                                    dbc.Row(
+                                                        children=[
+                                                            dbc.Col(
+                                                                width=6,
+                                                                children=[
+                                                                    utils.parameter_input("create_mp4", options=[{"label": "Create a Video", "value": 0}])
+                                                                ]
+                                                            ),
+                                                            dbc.Col(
+                                                                width=6,
+                                                                children=[
+                                                                    utils.parameter_input("mp4_fps")
+                                                                ]
+                                                            )
+                                                        ],
+                                                        style={"marginBottom": "10px"}
+                                                    ),
+                                                    dbc.Row(
+                                                        children=[
+                                                            dbc.Col(
+                                                                children=[
+                                                                    utils.parameter_input("save_all_images", options=[{"label": "Save All Images", "value": 0}])
+                                                                ],
+                                                                width=6
+                                                            ),
+                                                        ],
+                                                        style={"marginBottom": "10px"}
+                                                    )
                                                 ],
                                                 width=5
                                             ),
@@ -278,7 +307,7 @@ app.layout = html.Div(
                                                                     dbc.Row(
                                                                         children=[
                                                                             parameter_input("skip_augs", options=[
-                                                                                {"label": "Skip Augs", "value": False}
+                                                                                {"label": "Skip Augs", "value": 0}
                                                                             ], style={"display": "block"}),
                                                                         ],
                                                                         style={"marginBottom": "10px",
@@ -324,7 +353,7 @@ app.layout = html.Div(
                                             dbc.Row(
                                                 children=[
                                                     dbc.Col(
-                                                        parameter_input("RN101", options=[{"label": ""}]),
+                                                        parameter_input("RN101", options=[{"label": "", "value": 0}]),
                                                         width=12
                                                     )
                                                 ],
@@ -333,7 +362,7 @@ app.layout = html.Div(
                                             dbc.Row(
                                                 children=[
                                                     dbc.Col(
-                                                        parameter_input("RN50", options=[{"label": ""}]),
+                                                        parameter_input("RN50", options=[{"label": "", "value": 0}]),
                                                         width=12
                                                     )
                                                 ],
@@ -342,7 +371,7 @@ app.layout = html.Div(
                                             dbc.Row(
                                                 children=[
                                                     dbc.Col(
-                                                        parameter_input("RN50x16", options=[{"label": ""}]),
+                                                        parameter_input("RN50x16", options=[{"label": "", "value": 0}]),
                                                         width=12
                                                     )
                                                 ],
@@ -351,7 +380,7 @@ app.layout = html.Div(
                                             dbc.Row(
                                                 children=[
                                                     dbc.Col(
-                                                        parameter_input("RN50x4", options=[{"label": ""}]),
+                                                        parameter_input("RN50x4", options=[{"label": "", "value": 0}]),
                                                         width=12
                                                     )
                                                 ],
@@ -360,7 +389,7 @@ app.layout = html.Div(
                                             dbc.Row(
                                                 children=[
                                                     dbc.Col(
-                                                        parameter_input("RN50x64", options=[{"label": ""}]),
+                                                        parameter_input("RN50x64", options=[{"label": "", "value": 0}]),
                                                         width=12
                                                     )
                                                 ],
@@ -374,7 +403,7 @@ app.layout = html.Div(
                                             dbc.Row(
                                                 children=[
                                                     dbc.Col(
-                                                        parameter_input("ViTB16", options=[{"label": ""}]),
+                                                        parameter_input("ViTB16", options=[{"label": "", "value": 0}]),
                                                         width=12
                                                     )
                                                 ],
@@ -383,7 +412,7 @@ app.layout = html.Div(
                                             dbc.Row(
                                                 children=[
                                                     dbc.Col(
-                                                        parameter_input("ViTB32", options=[{"label": ""}]),
+                                                        parameter_input("ViTB32", options=[{"label": "", "value": 0}]),
                                                         width=12
                                                     )
                                                 ],
@@ -393,7 +422,7 @@ app.layout = html.Div(
                                                 children=[
                                                     dbc.Col(
                                                         parameter_input("ViTL14",
-                                                                        options=[{"label": "", "value": True}]),
+                                                                        options=[{"label": "", "value": 0}]),
                                                         width=12
                                                     )
                                                 ],
@@ -560,7 +589,21 @@ app.layout = html.Div(
                                                             dbc.Col(
                                                                 width=5,
                                                                 children=[
-                                                                    parameter_input("skip_steps"),
+                                                                    dbc.Row(
+                                                                        children=[
+                                                                            dbc.Label(
+                                                                                children=[html.B("Original Image Preservation")],
+                                                                                id=f"skip_steps_label"
+                                                                            ),
+                                                                            dcc.Slider(
+                                                                                0, 100,
+                                                                                id="skip_steps_input",
+                                                                                step=1,
+                                                                                marks={0: "0%", 50: "50%", 100: "100%"},
+                                                                                value=50
+                                                                            )
+                                                                        ]
+                                                                    )
                                                                 ]
                                                             )
                                                         ],
@@ -616,104 +659,104 @@ app.layout = html.Div(
                     style={"marginBottom": "30px"}
                 ),
 
-                # This is the Load Configuration File row!
-                dbc.Row(
-                    children=[
-                        dbc.Row(
-                            children=[
-                                dbc.Col(
-                                    width=12,
-                                    children=[
-                                        dcc.Markdown(
-                                            f"""
-                                            ### Load Configuration File
-                                            If you want to slightly tweak the settings from an old file, then use this area to upload the config for a particular batch! 
-                                            """
-                                        )
-                                    ],
-                                )
-                            ],
-                            style={"marginBottom": "10px"}
-                        ),
-
-                        # This is the "Load Configurations" input row. Within it, there'll be an 'Upload Config File' dcc.Upload, as well as a button to clear
-                        # the recently uploaded file.
-                        dbc.Row(
-                            children=[
-                                html.Div(
-                                    children=[
-                                        dcc.Upload(
-                                            id="load_config_upload",
-                                            children=["Load Config File"]
-                                        ),
-                                    ],
-                                    style={"width": "100%", "height": "75px", "borderStyle": "dashed",
-                                           "borderWidth": "1px", "textAlign": "center",
-                                           "lineHeight": "75px",
-                                           "cursor": "pointer", "marginBottom": "20px"}
-                                ),
-                                dcc.Markdown(
-                                    id="loaded_config_info",
-                                    children=[],
-                                    style={"marginBottom": "20px"}
-                                )
-                            ]
-                        )
-                    ],
-                    style={"marginBottom": "30px"}
-                ),
-
-                # This is the 'Run Diffusion' row!
-                dbc.Row(
-                    children=[
-                        dbc.Row(
-                            children=[
-                                dcc.Markdown(
-                                    children=[
-                                        """
-                                        ### Run Diffusion
-                                        Below, you'll be able to add configuration files to a queue; when these 
-                                        files are added to the queue, they'll be automatically run... **eventually. (This option DOES NOT WORK yet.)**
-                                        """
-                                    ]
-                                )
-                            ]
-                        ),
-                        dbc.Row(
-                            children=[
-                                html.Div(
-                                    children=[
-                                        dcc.Upload(
-                                            id="run_diffusion_upload",
-                                            children=[
-                                                html.Div("Upload Config File")
-                                            ],
-                                            multiple=True
-                                        )
-                                    ],
-                                    style={"width": "100%", "height": "75px", "borderStyle": "dashed",
-                                           "borderWidth": "1px", "textAlign": "center", "lineHeight": "75px",
-                                           "cursor": "pointer", "marginBottom": "20px"}
-                                )
-                            ]
-                        ),
-                        dbc.Row(
-                            children=[
-                                dbc.Col(
-                                    id="queue_area",
-                                    children=[
-                                        dbc.Row(
-                                            children=[],
-                                            style={"marginBottom": "25px"}
-                                        )
-                                    ],
-                                    width=12
-                                )
-                            ]
-                        )
-                    ],
-                    style={"marginBottom": "20px"}
-                )
+                # # This is the Load Configuration File row!
+                # dbc.Row(
+                #     children=[
+                #         dbc.Row(
+                #             children=[
+                #                 dbc.Col(
+                #                     width=12,
+                #                     children=[
+                #                         dcc.Markdown(
+                #                             f"""
+                #                             ### Load Configuration File
+                #                             If you want to slightly tweak the settings from an old file, then use this area to upload the config for a particular batch!
+                #                             """
+                #                         )
+                #                     ],
+                #                 )
+                #             ],
+                #             style={"marginBottom": "10px"}
+                #         ),
+                #
+                #         # This is the "Load Configurations" input row. Within it, there'll be an 'Upload Config File' dcc.Upload, as well as a button to clear
+                #         # the recently uploaded file.
+                #         dbc.Row(
+                #             children=[
+                #                 html.Div(
+                #                     children=[
+                #                         dcc.Upload(
+                #                             id="load_config_upload",
+                #                             children=["Load Config File"]
+                #                         ),
+                #                     ],
+                #                     style={"width": "100%", "height": "75px", "borderStyle": "dashed",
+                #                            "borderWidth": "1px", "textAlign": "center",
+                #                            "lineHeight": "75px",
+                #                            "cursor": "pointer", "marginBottom": "20px"}
+                #                 ),
+                #                 dcc.Markdown(
+                #                     id="loaded_config_info",
+                #                     children=[],
+                #                     style={"marginBottom": "20px"}
+                #                 )
+                #             ]
+                #         )
+                #     ],
+                #     style={"marginBottom": "30px"}
+                # ),
+                #
+                # # This is the 'Run Diffusion' row!
+                # dbc.Row(
+                #     children=[
+                #         dbc.Row(
+                #             children=[
+                #                 dcc.Markdown(
+                #                     children=[
+                #                         """
+                #                         ### Run Diffusion
+                #                         Below, you'll be able to add configuration files to a queue; when these
+                #                         files are added to the queue, they'll be automatically run... **eventually. (This option DOES NOT WORK yet.)**
+                #                         """
+                #                     ]
+                #                 )
+                #             ]
+                #         ),
+                #         dbc.Row(
+                #             children=[
+                #                 html.Div(
+                #                     children=[
+                #                         dcc.Upload(
+                #                             id="run_diffusion_upload",
+                #                             children=[
+                #                                 html.Div("Upload Config File")
+                #                             ],
+                #                             multiple=True
+                #                         )
+                #                     ],
+                #                     style={"width": "100%", "height": "75px", "borderStyle": "dashed",
+                #                            "borderWidth": "1px", "textAlign": "center", "lineHeight": "75px",
+                #                            "cursor": "pointer", "marginBottom": "20px"}
+                #                 )
+                #             ]
+                #         ),
+                #         dbc.Row(
+                #             children=[
+                #                 dbc.Col(
+                #                     id="queue_area",
+                #                     children=[
+                #                         dbc.Row(
+                #                             children=[],
+                #                             style={"marginBottom": "25px"}
+                #                         )
+                #                     ],
+                #                     width=12
+                #                 )
+                #             ]
+                #         )
+                #     ],
+                #     style={"marginBottom": "20px"}
+                # )
 
             ],
 
@@ -1073,7 +1116,11 @@ def generate_config(generate_config_nclicks,
     # If there's an init image, then we'll want to edit the settings_store_data
     if (init_image_store_data != "" and init_image_store_data is not None):
         settings_store_data["init_image"] = init_image_store_data
-        settings_store_data["steps"] += settings_store_data["skip_steps"]
+        skip_steps_multiplier = settings_store_data["skip_steps"] / 100
+        new_step_amount = settings_store_data["steps"]/(1-skip_steps_multiplier)
+        total_skip_steps_amount = skip_steps_multiplier * new_step_amount
+        settings_store_data["steps"] = int(new_step_amount)
+        settings_store_data["skip_steps"] = int(total_skip_steps_amount)
 
     # Run the "generate config" method in utils
     utils.generate_config(prompt_store_data, prompt_score_store_data, settings_store_data)
@@ -1089,35 +1136,12 @@ def generate_config(generate_config_nclicks,
     raise PreventUpdate
 
 
-# This callback will load in settings from an uploaded config file and set all of the settings of the different parameter inputs
-@app.callback(output=param_settings_outputs,
-              inputs=Input("load_config_upload", "contents"))
-def load_config_file(config_file_contents):
-
-    # Don't run this callback if there's nothing in the loaded config file upload
-    if config_file_contents is None:
-        raise PreventUpdate
-
-    # Parse the uploaded configuration file
-    parsed_config_file = utils.parse_uploaded_config(config_file_contents)
-
-    # Figure out the values we need to set the different parameters to
-    values = []
-    for param in param_names:
-        if (param not in parsed_config_file):
-            raise PreventUpdate
-        else:
-            values.append(parsed_config_file[param])
-
-    # Return the values array
-    return values
-
-
 # This callback will update the settings_store based on certain controls
 @app.callback(output=Output("settings_store", "data"),
               inputs=[param_settings_inputs],
               state=State("settings_store", "data"))
 def update_settings_store(inputs, current_settings):
+
     # Figure out which button was pressed
     ctx = dash.callback_context
     triggering_component = ctx.triggered[0]["prop_id"].split(".")[0]
@@ -1132,141 +1156,181 @@ def update_settings_store(inputs, current_settings):
 
     # Use the component_to_settings dict to figure out what setting we need to update
     value = ctx.triggered[0]["value"]
+    if (param_types[param_name] == "boolean"):
+        if (value == []):
+            value = False
     new_settings[param_name] = value
 
     return new_settings
 
 
-# This (fairly lengthy) callback will manage the prompt settings space
-@app.callback(output=Output("queue_area", "children"),
-              inputs=[Input("run_diffusion_upload", "contents"),
-                      Input({"type": "config_close_button", "index": ALL}, "n_clicks")],
-              state=[State("queue_area", "children")],
-              prevent_initial_callback=True)
-def manage_config_queue(upload_contents, config_close_button_nclicks,
-                        queue_area_current_children):
-    global config_idx
-    global config_queue
-    global config_queue_status
+@app.callback(output=Output("mp4_fps_input_group", "style"),
+              inputs=Input("create_mp4_input", "value"),
+              state=State("mp4_fps_input_group", "style"))
+def hide_or_show_video_fps_input(create_video, cur_style):
 
-    # We're going to keep a list of the configs that were uploaded
-    uploaded_configs = {}
-
-    # Figure out which button was pressed
-    ctx = dash.callback_context
-    triggering_component = ctx.triggered[0]["prop_id"].split(".")[0]
-
-    # If nothing was actually pressed, then we ought to not update the prompt area
-    if (triggering_component == ""):
-        raise PreventUpdate
-
-    # We want to create a new list for the queue_area's children, and then populate it accordingly
-    queue_area_new_children = deepcopy(queue_area_current_children)
-
-    # Figure out how many rows / columns there are in total
-    row_ct = len(queue_area_new_children)
-    bottom_row_col_ct = len(queue_area_new_children[-1]['props']['children'])
-    total_configs = max(((row_ct - 1) * 3) + (bottom_row_col_ct), 0)
-
-    # Deal with the instance where we'll need to remove a config
-    if (triggering_component[0] == "{"):
-
-        # Convert the string version of the dict to an actual dict
-        triggering_component = json.loads(triggering_component)
-        triggering_component_id = f"config_col_{triggering_component['index']}"
-
-        # Figure out which row the triggering component we're removing is in
-        component_row = None
-        for row_idx, row in reversed(list(enumerate(queue_area_new_children))):
-            idx_to_remove = utils.locate_id_index(triggering_component_id,
-                                                  queue_area_new_children[row_idx]['props']['children'])
-            if (idx_to_remove is not None):
-                component_row = row_idx
-                break
-
-        # If we're removing something from the last row, then this is simple
-        if (component_row == row_ct - 1):
-
-            del queue_area_new_children[-1]['props']['children'][idx_to_remove]
-
-        # Otherwise, this is a little more complicated - we need to effectively "shift" all of the prompts
-        # one index to the left.
-        else:
-            queue_area_new_children = utils.shift_prompts_back_one(queue_area_new_children, component_row,
-                                                                   idx_to_remove)
-
-        del config_queue[triggering_component['index']]
-        config_queue_status[triggering_component['index']] = {"status": "stopped", "progress":
-            config_queue_status[triggering_component['index']]["progress"]}
-
-    # If triggering_component isn't a dict, then we need to add a config
-    else:
-
-        # Since we can upload multiple configuration files at once, we'll want to make sure that we're adding
-        # windows to handle all of them
-        for upload in upload_contents:
-
-            # Recalculate some of this information
-            row_ct = len(queue_area_new_children)
-            bottom_row_col_ct = len(queue_area_new_children[-1]['props']['children'])
-            total_configs = max(((row_ct - 1) * 3) + (bottom_row_col_ct), 0)
-
-            # If we've got less than three columns in the bottom row, we can just add another column
-            if (bottom_row_col_ct < 3):
-
-                # Generate the component depending on whether or not we want a new text prompt / new image prompt
-                component_to_add = generate_config_window(config_idx)
-
-                # Add the component to the current prompt area
-                queue_area_new_children[-1]['props']['children'].append(component_to_add)
-
-            # Otherwise, we need to add another row, and then alter things accordingly
-            else:
-
-                # Generate the component depending on whether or not we want a new text prompt / new image prompt
-                component_to_add = generate_config_window(config_idx)
-
-                # Now, create a new row, and then add the button to it
-                queue_area_new_children.append(dbc.Row(children=[component_to_add], style={"marginBottom": "25px"}))
-
-            # Parse the contents of the uploaded configurations, and add them to the uploaded_configs list
-            uploaded_configs[config_idx] = utils.parse_uploaded_config(upload)
-            config_queue_status[config_idx] = {"status": "queued", "progress": 0}
-
-            # Update the config_idx
-            config_idx += 1
-
-        # Add the contents of the uploaded_configs list to the config_queue_data store
-        config_queue = config_queue | uploaded_configs
-
-    # Return the new children of the prompt_area and prompt_store
-    return queue_area_new_children
+    # We're going to return a new style dictionary, which is a copy of the old one w/ the visibility changed
+    new_style = deepcopy(cur_style)
+    new_style["visibility"] = "visible" if create_video else "hidden"
+    return new_style
 
 
-# This callback will print how many intervals have elapsed
-@app.callback(output=Output({"type": "config_progress_bar", "index": ALL}, "value"),
-              inputs=[Input("queue_management_interval", "n_intervals")],
-              state=[State({"type": "config_progress_bar", "index": ALL}, "value")])
-def handle_queue(n_intervals, cur_vals):
-    # First, we're going to check to see if there are un-run config files in the queue
-    for config_idx, config_status in config_queue_status.items():
-        if (config_status["status"] == "queued"):
-            print(f"At timestep {n_intervals}, config {config_idx} needs to be run.")
-
-    raise PreventUpdate
-
-
-# This callback will let you know which configuration file you've loaded
-@app.callback(output=Output("loaded_config_info", "children"),
-              inputs=Input("load_config_upload", "filename"))
-def updated_loaded_config_info_div(upload_filename):
-
-    # If the filename is nothing, then prevent an update
-    if (upload_filename is None or upload_filename == ""):
-        raise PreventUpdate
-
-    # Otherwise, return the name of the file
-    return f"""Loaded the settings for the config file located at **{upload_filename}**."""
+#
+# # This callback will load in settings from an uploaded config file and set all of the settings of the different parameter inputs
+# @app.callback(output=param_settings_outputs,
+#               inputs=Input("load_config_upload", "contents"))
+# def load_config_file(config_file_contents):
+#
+#     # Don't run this callback if there's nothing in the loaded config file upload
+#     if config_file_contents is None:
+#         raise PreventUpdate
+#
+#     # Parse the uploaded configuration file
+#     parsed_config_file = utils.parse_uploaded_config(config_file_contents)
+#
+#     # Figure out the values we need to set the different parameters to
+#     values = []
+#     for param in param_names:
+#         if (param not in parsed_config_file):
+#             raise PreventUpdate
+#         else:
+#             values.append(parsed_config_file[param])
+#
+#     # Return the values array
+#     return values
+#
+#
+# # This callback will let you know which configuration file you've loaded
+# @app.callback(output=Output("loaded_config_info", "children"),
+#               inputs=Input("load_config_upload", "filename"))
+# def updated_loaded_config_info_div(upload_filename):
+#
+#     # If the filename is nothing, then prevent an update
+#     if (upload_filename is None or upload_filename == ""):
+#         raise PreventUpdate
+#
+#     # Otherwise, return the name of the file
+#     return f"""Loaded the settings for the config file located at **{upload_filename}**."""
+#
+#
+# # This (fairly lengthy) callback will manage the prompt settings space
+# @app.callback(output=Output("queue_area", "children"),
+#               inputs=[Input("run_diffusion_upload", "contents"),
+#                       Input({"type": "config_close_button", "index": ALL}, "n_clicks")],
+#               state=[State("queue_area", "children")],
+#               prevent_initial_callback=True)
+# def manage_config_queue(upload_contents, config_close_button_nclicks,
+#                         queue_area_current_children):
+#     global config_idx
+#     global config_queue
+#     global config_queue_status
+#
+#     # We're going to keep a list of the configs that were uploaded
+#     uploaded_configs = {}
+#
+#     # Figure out which button was pressed
+#     ctx = dash.callback_context
+#     triggering_component = ctx.triggered[0]["prop_id"].split(".")[0]
+#
+#     # If nothing was actually pressed, then we ought to not update the prompt area
+#     if (triggering_component == ""):
+#         raise PreventUpdate
+#
+#     # We want to create a new list for the queue_area's children, and then populate it accordingly
+#     queue_area_new_children = deepcopy(queue_area_current_children)
+#
+#     # Figure out how many rows / columns there are in total
+#     row_ct = len(queue_area_new_children)
+#     bottom_row_col_ct = len(queue_area_new_children[-1]['props']['children'])
+#     total_configs = max(((row_ct - 1) * 3) + (bottom_row_col_ct), 0)
+#
+#     # Deal with the instance where we'll need to remove a config
+#     if (triggering_component[0] == "{"):
+#
+#         # Convert the string version of the dict to an actual dict
+#         triggering_component = json.loads(triggering_component)
+#         triggering_component_id = f"config_col_{triggering_component['index']}"
+#
+#         # Figure out which row the triggering component we're removing is in
+#         component_row = None
+#         for row_idx, row in reversed(list(enumerate(queue_area_new_children))):
+#             idx_to_remove = utils.locate_id_index(triggering_component_id,
+#                                                   queue_area_new_children[row_idx]['props']['children'])
+#             if (idx_to_remove is not None):
+#                 component_row = row_idx
+#                 break
+#
+#         # If we're removing something from the last row, then this is simple
+#         if (component_row == row_ct - 1):
+#
+#             del queue_area_new_children[-1]['props']['children'][idx_to_remove]
+#
+#         # Otherwise, this is a little more complicated - we need to effectively "shift" all of the prompts
+#         # one index to the left.
+#         else:
+#             queue_area_new_children = utils.shift_prompts_back_one(queue_area_new_children, component_row,
+#                                                                    idx_to_remove)
+#
+#         del config_queue[triggering_component['index']]
+#         config_queue_status[triggering_component['index']] = {"status": "stopped", "progress":
+#             config_queue_status[triggering_component['index']]["progress"]}
+#
+#     # If triggering_component isn't a dict, then we need to add a config
+#     else:
+#
+#         # Since we can upload multiple configuration files at once, we'll want to make sure that we're adding
+#         # windows to handle all of them
+#         for upload in upload_contents:
+#
+#             # Recalculate some of this information
+#             row_ct = len(queue_area_new_children)
+#             bottom_row_col_ct = len(queue_area_new_children[-1]['props']['children'])
+#             total_configs = max(((row_ct - 1) * 3) + (bottom_row_col_ct), 0)
+#
+#             # If we've got less than three columns in the bottom row, we can just add another column
+#             if (bottom_row_col_ct < 3):
+#
+#                 # Generate the component depending on whether or not we want a new text prompt / new image prompt
+#                 component_to_add = generate_config_window(config_idx)
+#
+#                 # Add the component to the current prompt area
+#                 queue_area_new_children[-1]['props']['children'].append(component_to_add)
+#
+#             # Otherwise, we need to add another row, and then alter things accordingly
+#             else:
+#
+#                 # Generate the component depending on whether or not we want a new text prompt / new image prompt
+#                 component_to_add = generate_config_window(config_idx)
+#
+#                 # Now, create a new row, and then add the button to it
+#                 queue_area_new_children.append(dbc.Row(children=[component_to_add], style={"marginBottom": "25px"}))
+#
+#             # Parse the contents of the uploaded configurations, and add them to the uploaded_configs list
+#             uploaded_configs[config_idx] = utils.parse_uploaded_config(upload)
+#             config_queue_status[config_idx] = {"status": "queued", "progress": 0}
+#
+#             # Update the config_idx
+#             config_idx += 1
+#
+#         # Add the contents of the uploaded_configs list to the config_queue_data store
+#         config_queue = config_queue | uploaded_configs
+#
+#     # Return the new children of the prompt_area and prompt_store
+#     return queue_area_new_children
+#
+#
+# # This callback will print how many intervals have elapsed
+# @app.callback(output=Output({"type": "config_progress_bar", "index": ALL}, "value"),
+#               inputs=[Input("queue_management_interval", "n_intervals")],
+#               state=[State({"type": "config_progress_bar", "index": ALL}, "value")])
+# def handle_queue(n_intervals, cur_vals):
+#     # First, we're going to check to see if there are un-run config files in the queue
+#     for config_idx, config_status in config_queue_status.items():
+#         if (config_status["status"] == "queued"):
+#             print(f"At timestep {n_intervals}, config {config_idx} needs to be run.")
+#
+#     raise PreventUpdate
+#
 
 
 # ============================
